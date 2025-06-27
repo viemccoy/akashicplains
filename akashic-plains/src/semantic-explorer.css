@@ -346,3 +346,231 @@
   box-shadow: 0 0 10px var(--color-purple);
   text-shadow: 0 0 5px var(--color-purple);
 }
+
+/* Enhanced Terrain Display */
+.terrain-container {
+  position: relative;
+  display: inline-block;
+}
+
+.terrain-display {
+  font-size: 20px;
+  line-height: 1.0;
+  letter-spacing: 0.4em;
+  color: var(--color-amber);
+  text-shadow: 0 0 3px var(--color-amber-glow);
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Fog of War Effect */
+.fog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.3) 60%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+/* Info Panel */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-left: 1px solid var(--color-amber);
+  overflow-y: auto;
+  width: 400px;
+}
+
+/* Synthesis Info */
+.synthesis-info h3 {
+  color: var(--color-cyan);
+  text-shadow: 0 0 15px var(--color-cyan);
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { text-shadow: 0 0 15px var(--color-cyan), 0 0 30px var(--color-cyan); }
+  50% { text-shadow: 0 0 20px var(--color-cyan), 0 0 40px var(--color-cyan), 0 0 60px var(--color-white); }
+}
+
+.synthesis-source {
+  color: var(--color-purple);
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.synthesis-definition {
+  color: var(--color-gold);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+/* Bookmarks Section */
+.bookmarks-section {
+  border: 1px solid var(--color-purple);
+  padding: 15px;
+  background: rgba(147, 112, 219, 0.05);
+}
+
+.bookmarks-section h3 {
+  color: var(--color-purple);
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  text-shadow: 0 0 5px var(--color-purple);
+}
+
+.bookmarks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  background: rgba(147, 112, 219, 0.1);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.bookmark-item:hover {
+  border-color: var(--color-purple);
+  background: rgba(147, 112, 219, 0.2);
+}
+
+.bookmark-icon {
+  color: var(--color-purple);
+  font-size: 16px;
+  text-shadow: 0 0 5px var(--color-purple);
+}
+
+.bookmark-word {
+  color: var(--color-sand);
+  font-weight: bold;
+}
+
+.synthesis-button {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid var(--color-cyan);
+  color: var(--color-cyan);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 5px var(--color-cyan);
+}
+
+.synthesis-button:hover:not(:disabled) {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 20px var(--color-cyan);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.synthesis-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.synthesis-hint {
+  font-size: 12px;
+  color: var(--color-sand);
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* Nearby Section */
+.nearby-section {
+  border: 1px solid var(--color-amber);
+  padding: 15px;
+  background: rgba(255, 176, 0, 0.02);
+}
+
+.nearby-section h3 {
+  color: var(--color-amber);
+  font-size: 14px;
+  margin: 0 0 10px 0;
+}
+
+.nearby-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nearby-item {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.nearby-direction {
+  color: var(--color-cyan);
+  font-size: 16px;
+  text-align: center;
+}
+
+.nearby-word {
+  color: var(--color-sand);
+}
+
+.nearby-distance {
+  color: var(--color-amber);
+  opacity: 0.7;
+}
+
+.no-nearby,
+.no-bookmarks {
+  font-size: 12px;
+  color: var(--color-sand);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Current Info */
+.current-info {
+  min-height: 200px;
+}
+
+.terrain-info h3 {
+  color: var(--color-sand);
+  opacity: 0.8;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--color-amber);
+  opacity: 0.6;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Footer */
+.discovery-count {
+  color: var(--color-gold);
+  font-size: 12px;
+}
