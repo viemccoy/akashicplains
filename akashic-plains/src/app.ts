@@ -1,9 +1,9 @@
 import './style.css';
-import './semantic-explorer.css';
-import { SemanticExplorerGame } from './SemanticExplorerGame';
+import './ui/CenteredUI.css';
+import { CenteredSemanticGame } from './CenteredSemanticGame';
 
 class AkashicPlainsApp {
-  private game?: SemanticExplorerGame;
+  private game?: CenteredSemanticGame;
   private apiKey?: string;
   private seedConcept?: string;
   
@@ -151,7 +151,7 @@ class AkashicPlainsApp {
         
         try {
           this.seedConcept = concept;
-          this.game = new SemanticExplorerGame(this.apiKey!, 'Explorer');
+          this.game = new CenteredSemanticGame(this.apiKey!, 'Explorer');
           await this.game.initialize(concept);
           // Game renders itself, no need to call render()
         } catch (error) {

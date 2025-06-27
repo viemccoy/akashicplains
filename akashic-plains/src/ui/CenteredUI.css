@@ -1,0 +1,553 @@
+/* Centered UI Layout */
+.semantic-topology-engine {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 60px 1fr 40px;
+  grid-template-columns: 300px 1fr 300px;
+  background: var(--color-bg);
+  color: var(--color-amber);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+
+/* Top Header - spans full width */
+.engine-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 2px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.engine-title {
+  font-size: 22px;
+  color: var(--color-gold);
+  text-shadow: 0 0 15px var(--color-gold);
+  letter-spacing: 3px;
+  font-weight: bold;
+}
+
+.player-stats {
+  display: flex;
+  gap: 30px;
+  font-size: 13px;
+  color: var(--color-sand);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  opacity: 0.7;
+}
+
+.stat-value {
+  color: var(--color-amber);
+  font-weight: bold;
+}
+
+/* Left Panel - Bookmarks & Synthesis */
+.left-panel {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Center - Main Exploration Area */
+.exploration-area {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.terrain-viewport {
+  position: relative;
+  padding: 40px;
+}
+
+.terrain-frame {
+  border: 2px solid var(--color-amber);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 0 20px rgba(255, 176, 0, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.terrain-display {
+  font-size: 22px;
+  line-height: 1.0;
+  letter-spacing: 0.5em;
+  color: var(--color-amber);
+  text-shadow: 0 0 4px var(--color-amber-glow);
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Fog overlay */
+.fog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 35%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.5) 70%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+}
+
+/* Current Location Info - floating above terrain */
+.current-location-float {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--color-purple);
+  padding: 15px 25px;
+  min-width: 300px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+}
+
+/* Right Panel - Discoveries & Nearby */
+.right-panel {
+  grid-column: 3;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Bottom Status Bar */
+.status-bar {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-top: 1px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.9);
+  font-size: 12px;
+}
+
+.controls-hint {
+  color: var(--color-sand);
+  opacity: 0.8;
+}
+
+.discovery-progress {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 10px;
+  border: 1px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-amber), var(--color-gold));
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px currentColor;
+}
+
+/* Panel Sections */
+.panel-section {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
+}
+
+.panel-header {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-icon {
+  font-size: 18px;
+}
+
+/* Bookmarks Section */
+.bookmarks-panel {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(147, 112, 219, 0.1);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookmark-item:hover {
+  border-color: var(--color-purple);
+  background: rgba(147, 112, 219, 0.2);
+}
+
+.bookmark-symbol {
+  color: var(--color-purple);
+  font-size: 20px;
+  text-shadow: 0 0 5px var(--color-purple);
+  margin-top: 2px;
+}
+
+.bookmark-content {
+  flex: 1;
+}
+
+.bookmark-word {
+  color: var(--color-sand);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.bookmark-definition {
+  font-size: 11px;
+  color: var(--color-sand);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Synthesis Section */
+.synthesis-panel {
+  background: rgba(0, 255, 255, 0.05);
+  border-color: var(--color-cyan);
+}
+
+.synthesis-panel .panel-header {
+  color: var(--color-cyan);
+  text-shadow: 0 0 5px var(--color-cyan);
+}
+
+/* Discoveries Section */
+.discoveries-panel {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.discovery-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.discovery-item:hover {
+  background: rgba(255, 176, 0, 0.05);
+}
+
+.discovery-symbol {
+  font-size: 24px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.discovery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.discovery-word {
+  color: var(--color-amber);
+  font-weight: bold;
+}
+
+.discovery-meta {
+  font-size: 10px;
+  color: var(--color-sand);
+  opacity: 0.7;
+}
+
+/* Nearby Hints */
+.nearby-panel {
+  background: rgba(255, 176, 0, 0.02);
+}
+
+.nearby-hint {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nearby-hint:hover {
+  border-color: var(--color-amber);
+  background: rgba(255, 176, 0, 0.1);
+}
+
+.hint-direction {
+  font-size: 24px;
+  color: var(--color-cyan);
+  width: 30px;
+  text-align: center;
+}
+
+.hint-info {
+  flex: 1;
+}
+
+.hint-distance {
+  font-size: 11px;
+  color: var(--color-amber);
+  opacity: 0.7;
+}
+
+/* Discovery Indicators */
+.undiscovered-glow {
+  animation: mystery-pulse 3s ease-in-out infinite;
+}
+
+@keyframes mystery-pulse {
+  0%, 100% { 
+    opacity: 0.5;
+    text-shadow: 0 0 5px currentColor;
+  }
+  50% { 
+    opacity: 1;
+    text-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
+  }
+}
+
+/* Synthesis Creation */
+.synthesis-ready {
+  animation: ready-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 20px var(--color-cyan);
+}
+
+@keyframes ready-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Mini Map */
+.mini-map-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  border: 2px solid var(--color-amber);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.mini-map {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.mini-map-label {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  font-size: 10px;
+  color: var(--color-amber);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Concept Graph */
+.concept-graph-container {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  border: 1px solid var(--color-purple);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 10px;
+  box-shadow: 0 0 20px rgba(147, 112, 219, 0.3);
+}
+
+.concept-graph {
+  display: block;
+  cursor: grab;
+}
+
+.concept-graph:active {
+  cursor: grabbing;
+}
+
+.graph-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  font-size: 10px;
+}
+
+.graph-control {
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--color-purple);
+  color: var(--color-purple);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.graph-control:hover {
+  background: rgba(147, 112, 219, 0.2);
+}
+
+/* Path Guide */
+.path-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.path-arrow {
+  font-size: 48px;
+  color: var(--color-cyan);
+  text-shadow: 0 0 20px var(--color-cyan);
+  animation: path-pulse 2s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+@keyframes path-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Quick Travel Menu */
+.quick-travel {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--color-amber);
+  padding: 15px;
+  max-width: 250px;
+  max-height: 400px;
+  overflow-y: auto;
+  display: none;
+}
+
+.quick-travel.active {
+  display: block;
+}
+
+.quick-travel-header {
+  color: var(--color-gold);
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px var(--color-gold);
+}
+
+.travel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.travel-item:hover {
+  background: rgba(255, 176, 0, 0.1);
+  padding-left: 10px;
+}
+
+.travel-icon {
+  color: var(--color-cyan);
+  font-size: 16px;
+}
+
+.travel-name {
+  flex: 1;
+  color: var(--color-sand);
+}
+
+.travel-coords {
+  color: var(--color-amber);
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+/* Statistics Panel */
+.stats-panel {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--color-purple);
+  padding: 15px;
+  width: 200px;
+  display: none;
+}
+
+.stats-panel.active {
+  display: block;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.stat-name {
+  color: var(--color-sand);
+  opacity: 0.8;
+}
+
+.stat-value {
+  color: var(--color-amber);
+  font-weight: bold;
+}
