@@ -151,7 +151,9 @@ class AkashicPlainsApp {
         
         try {
           this.seedConcept = concept;
-          this.game = new CenteredSemanticGame(this.apiKey!, 'Explorer');
+          // Get saved player name or use default
+          const savedName = localStorage.getItem('akashic-player-name') || 'Explorer';
+          this.game = new CenteredSemanticGame(this.apiKey!, savedName);
           await this.game.initialize(concept);
           // Game renders itself, no need to call render()
         } catch (error) {

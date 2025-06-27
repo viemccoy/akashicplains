@@ -4,11 +4,43 @@
   height: 100vh;
   display: grid;
   grid-template-rows: 60px 1fr 40px;
-  grid-template-columns: 300px 1fr 300px;
+  grid-template-columns: minmax(250px, 300px) 1fr minmax(250px, 300px);
   background: var(--color-bg);
   color: var(--color-amber);
   font-family: var(--font-mono);
   overflow: hidden;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 1200px) {
+  .semantic-topology-engine {
+    grid-template-columns: 200px 1fr 200px;
+  }
+}
+
+@media (max-width: 900px) {
+  .semantic-topology-engine {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr auto 40px;
+  }
+  
+  .left-panel, .right-panel {
+    display: none;
+  }
+  
+  .engine-header {
+    padding: 0 10px;
+  }
+  
+  .engine-title {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  
+  .player-stats {
+    gap: 15px;
+    font-size: 11px;
+  }
 }
 
 /* Top Header - spans full width */
@@ -61,6 +93,8 @@
   flex-direction: column;
   border-right: 1px solid var(--color-amber);
   background: rgba(0, 0, 0, 0.8);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Center - Main Exploration Area */
@@ -125,6 +159,8 @@
   flex-direction: column;
   border-left: 1px solid var(--color-amber);
   background: rgba(0, 0, 0, 0.8);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Bottom Status Bar */
@@ -537,4 +573,74 @@
 .stat-value {
   color: var(--color-amber);
   font-weight: bold;
+}
+/* Player Name Editor */
+.player-name-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.player-name-display {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.player-name-display:hover {
+  color: var(--color-gold);
+  text-decoration: underline;
+}
+
+.player-name-input {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--color-amber);
+  color: var(--color-gold);
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  width: 120px;
+}
+
+.player-name-input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 5px var(--color-gold);
+}
+
+/* Panel scrollbar styling */
+.left-panel::-webkit-scrollbar,
+.right-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-track,
+.right-panel::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.left-panel::-webkit-scrollbar-thumb,
+.right-panel::-webkit-scrollbar-thumb {
+  background: var(--color-amber);
+  border-radius: 3px;
+}
+
+/* Ensure terrain display fits properly */
+.terrain-display {
+  font-size: clamp(14px, 2.5vw, 22px);
+  line-height: 1.0;
+  letter-spacing: clamp(0.2em, 0.4vw, 0.5em);
+}
+
+/* Responsive adjustments for discovery feed */
+@media (max-width: 1400px) {
+  .global-discovery-feed {
+    width: 280px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 900px) {
+  .global-discovery-feed {
+    display: none;
+  }
 }

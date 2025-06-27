@@ -19,6 +19,7 @@ export class CenteredSemanticGame {
   private totalConcepts = 0;
   private otherPlayers: PlayerState[] = [];
   private multiplayerEnabled = false;
+  private isEditingName = false;
   
   constructor(apiKey: string, playerName: string) {
     this.engine = new RichSemanticEngine(apiKey);
@@ -198,21 +199,26 @@ export class CenteredSemanticGame {
     const discovery = await this.engine.exploreTile(newX, newY, this.playerId);
     if (discovery) {
       if ('word' in discovery) {
-        console.log(`📖 Discovered: ${discovery.word}`);
-        this.discoveries++;
-        
-        // Add to local discovery feed
-        this.discoveryFeed.addDiscovery(
-          'concept',
-          this.playerName,
-          this.playerId,
-          discovery.word,
-          { x: newX, y: newY }
-        );
-        
-        // Broadcast discovery to other players
-        if (this.multiplayer && this.multiplayerEnabled) {
-          this.multiplayer.sendDiscovery(discovery.word, { x: newX, y: newY });
+        // Check if this is a new discovery (not already discovered)
+        if (!discovery.discovered || discovery.visitors.size === 1) {
+          console.log(`📖 Discovered: ${discovery.word}`);
+          this.discoveries++;
+          
+          // Add to local discovery feed only for first discovery
+          this.discoveryFeed.addDiscovery(
+            'concept',
+            this.playerName,
+            this.playerId,
+            discovery.word,
+            { x: newX, y: newY }
+          );
+          
+          // Broadcast discovery to other players
+          if (this.multiplayer && this.multiplayerEnabled) {
+            this.multiplayer.sendDiscovery(discovery.word, { x: newX, y: newY });
+          }
+        } else {
+          console.log(`📖 Revisited: ${discovery.word}`);
         }
       } else {
         console.log(`✨ Found synthesis: ${discovery.name}`);
@@ -270,7 +276,21 @@ export class CenteredSemanticGame {
           <div class="player-stats">
             <div class="stat">
               <span class="stat-label">Explorer:</span>
-              <span class="stat-value">${this.playerName}</span>
+              <span class="stat-value player-name-editor">
+                ${this.isEditingName ? `
+                  <input type="text" 
+                    class="player-name-input" 
+                    id="player-name-input"
+                    value="${this.playerName}" 
+                    maxlength="20"
+                    autocomplete="off"
+                  />
+                ` : `
+                  <span class="player-name-display" id="player-name-display">
+                    ${this.playerName}
+                  </span>
+                `}
+              </span>
             </div>
             <div class="stat">
               <span class="stat-label">Position:</span>
@@ -335,6 +355,62 @@ export class CenteredSemanticGame {
         await this.createSynthesis();
       });
     }
+    
+    // Setup player name editor
+    this.setupNameEditor();
+  }
+  
+  private setupNameEditor() {
+    const nameDisplay = document.getElementById('player-name-display');
+    const nameInput = document.getElementById('player-name-input') as HTMLInputElement;
+    
+    if (nameDisplay) {
+      nameDisplay.addEventListener('click', () => {
+        this.isEditingName = true;
+        this.render();
+        // Focus input after render
+        setTimeout(() => {
+          const input = document.getElementById('player-name-input') as HTMLInputElement;
+          if (input) {
+            input.focus();
+            input.select();
+          }
+        }, 0);
+      });
+    }
+    
+    if (nameInput) {
+      nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          this.savePlayerName(nameInput.value);
+        } else if (e.key === 'Escape') {
+          this.isEditingName = false;
+          this.render();
+        }
+      });
+      
+      nameInput.addEventListener('blur', () => {
+        this.savePlayerName(nameInput.value);
+      });
+    }
+  }
+  
+  private savePlayerName(newName: string) {
+    newName = newName.trim();
+    if (newName && newName !== this.playerName) {
+      this.playerName = newName;
+      localStorage.setItem('akashic-player-name', newName);
+      
+      // Update multiplayer if connected
+      if (this.multiplayer && this.multiplayerEnabled) {
+        // Disconnect and reconnect with new name
+        this.multiplayer.disconnect();
+        this.initializeMultiplayer();
+      }
+    }
+    
+    this.isEditingName = false;
+    this.render();
   }
   
   private renderCurrentInfo(): string {
