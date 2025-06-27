@@ -25,11 +25,13 @@ export class TerrainGenerator {
       const direction = this.getDirectionFromCenter(chunkX, chunkY);
       
       // Generate terrain using Claude
+      console.log(`Generating chunk (${chunkX}, ${chunkY}) with concept: ${centerConcept}`);
       const result = await this.claude.generateTerrain(
         centerConcept,
         adjacentInfo,
         direction
       );
+      console.log('Claude response received:', result);
       
       // Process the generated terrain
       const terrain = this.processGeneratedTerrain(result.terrain);

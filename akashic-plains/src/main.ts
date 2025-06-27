@@ -1,7 +1,9 @@
 import './style.css';
 import type { GameState } from './types';
-import { initializeGame, GameManager } from './game';
+import { initializeGame } from './game';
+import { SemanticGameManager } from './game/semanticGameManager';
 import { renderAPIKeyScreen } from './components/apiKeyScreen';
+import { renderSeedConceptScreen } from './components/seedConceptScreen';
 import { renderGameScreen } from './components/gameScreen';
 import { renderLocationInfo } from './components/locationInfo';
 import { renderSynthesisModal } from './components/synthesisModal';
@@ -11,9 +13,11 @@ import { ParticleSystem } from './effects/particles';
 import { DayNightCycle } from './effects/dayNightCycle';
 
 let gameState: GameState | null = null;
-let gameManager: GameManager | null = null;
+let gameManager: SemanticGameManager | null = null;
 let isProcessingMove = false;
 let showingSynthesisModal = false;
+let tempApiKey: string | null = null;
+let showingSeedScreen = false;
 
 // Initialize systems
 const notifications = new NotificationManager();
@@ -28,8 +32,13 @@ function render() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
   
   if (!gameState || !gameState.apiKey) {
-    app.innerHTML = renderAPIKeyScreen();
-    setupAPIKeyHandlers();
+    if (showingSeedScreen && tempApiKey) {
+      app.innerHTML = renderSeedConceptScreen();
+      setupSeedConceptHandlers();
+    } else {
+      app.innerHTML = renderAPIKeyScreen();
+      setupAPIKeyHandlers();
+    }
   } else {
     app.innerHTML = renderGameScreen(gameState);
     
@@ -74,7 +83,7 @@ function setupAPIKeyHandlers() {
           const loadedState = storage.loadGameState(apiKey);
           if (loadedState) {
             gameState = loadedState;
-            gameManager = new GameManager(gameState);
+            gameManager = new SemanticGameManager(gameState);
             notifications.show('Welcome back, wanderer...', 'info');
             render();
           }
@@ -82,37 +91,69 @@ function setupAPIKeyHandlers() {
       });
     }
     
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
       const apiKey = input.value.trim();
       if (apiKey) {
-        button.disabled = true;
-        button.textContent = 'Awakening the desert...';
-        
-        try {
-          gameState = initializeGame(apiKey);
-          gameManager = new GameManager(gameState);
-          
-          // Load initial chunks
-          await gameManager.ensureNearbyChunksLoaded();
-          
-          // Start effects
-          particles.start();
-          dayNight.start();
-          
-          notifications.show('The Akashic Plains awaken before you...', 'info');
-          render();
-        } catch (error) {
-          console.error('Failed to initialize game:', error);
-          button.disabled = false;
-          button.textContent = 'Begin Your Journey';
-          alert('Failed to connect to the Akashic Records. Please check your API key.');
-        }
+        // Store API key and show seed concept screen
+        tempApiKey = apiKey;
+        showingSeedScreen = true;
+        render();
       }
     };
     
     button.addEventListener('click', handleSubmit);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleSubmit();
+    });
+  }
+}
+
+function setupSeedConceptHandlers() {
+  const input = document.querySelector<HTMLInputElement>('.seed-input');
+  const button = document.getElementById('begin-journey') as HTMLButtonElement;
+  const suggestions = document.querySelectorAll('.suggestion');
+  
+  if (input && button && tempApiKey) {
+    const handleBegin = async () => {
+      const seedConcept = input.value.trim() || 'consciousness';
+      
+      button.disabled = true;
+      button.textContent = 'The desert stirs...';
+      
+      try {
+        gameState = initializeGame(tempApiKey!);
+        gameState.seedConcept = seedConcept;
+        gameManager = new SemanticGameManager(gameState);
+        
+        // Load initial chunks
+        await gameManager.ensureNearbyChunksLoaded();
+        
+        // Start effects
+        particles.start();
+        dayNight.start();
+        
+        notifications.show(`The desert awakens to the concept of ${seedConcept}...`, 'info');
+        showingSeedScreen = false;
+        render();
+      } catch (error) {
+        console.error('Failed to initialize game:', error);
+        button.disabled = false;
+        button.textContent = 'Enter the Desert';
+        alert('Failed to awaken the desert. Please try again.');
+      }
+    };
+    
+    button.addEventListener('click', handleBegin);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleBegin();
+    });
+    
+    // Handle suggestion clicks
+    suggestions.forEach(suggestion => {
+      suggestion.addEventListener('click', () => {
+        input.value = suggestion.getAttribute('data-concept') || '';
+        input.focus();
+      });
     });
   }
 }

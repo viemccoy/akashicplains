@@ -56,6 +56,7 @@ export interface GameState {
   maxEnergy: number;
   apiKey: string | null;
   playerName: string;
+  seedConcept?: string;
 }
 
 export interface TerrainGenerationResult {
@@ -103,13 +104,13 @@ export const TERRAIN_SYMBOLS = {
   TEMPLE_TOP: '┌─┐',
   TEMPLE_MID: '│ │',
   TEMPLE_BOT: '└─┘',
-  CRYSTALS: '◊',
+  CRYSTALS: '◆',
   GLYPHS: '※',
   LEY_LINE: '═',
   SANDSTORM: '▓',
-  PLAYER: '◊',
-  WANDERER: '∘',
+  PLAYER: '@',
+  WANDERER: '☺',
 } as const;
 
 export const CHUNK_SIZE = 16;
-export const VIEW_DISTANCE = 12; // How many tiles to show around player
+export const VIEW_DISTANCE = 20; // How many tiles to show around player

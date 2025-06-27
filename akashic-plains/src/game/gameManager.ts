@@ -109,6 +109,11 @@ export class GameManager {
   }
   
   private getConceptForDistance(distance: number): string {
+    // Use seed concept at origin, then get more abstract as you move away
+    if (distance < 1) {
+      return this.state.seedConcept || 'consciousness';
+    }
+    
     // Concepts get more abstract/complex as you move away from origin
     const concepts = [
       ['consciousness', 'awareness', 'being'],
