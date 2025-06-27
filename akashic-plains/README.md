@@ -1,6 +1,6 @@
 # Akashic Plains - Where Knowledge Crystallizes in Sand
 
-A mystical ASCII semantic explorer where users traverse an infinite desert of knowledge rendered in terminal aesthetics. Powered by Claude AI, each step reveals new concepts and sacred sites of wisdom.
+The mystical ASCII semantic explorer where users traverse an infinite desert of knowledge rendered in terminal aesthetics. Powered by Claude AI, each step reveals new concepts and sacred sites of wisdom.
 
 ## Features
 
