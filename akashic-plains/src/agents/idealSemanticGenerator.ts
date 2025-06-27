@@ -33,6 +33,12 @@ export class IdealSemanticGenerator {
   private conceptMap: Map<string, ConceptNode> = new Map();
   
   constructor(apiKey: string) {
+    console.log(`🔑 Initializing IdealSemanticGenerator with API key: ${apiKey ? 'provided' : 'missing'}`);
+    
+    if (!apiKey) {
+      console.error('❌ No API key provided to IdealSemanticGenerator');
+    }
+    
     this.engine = new SemanticEngine(apiKey);
     this.topology = new TopologyGenerator();
     this.client = new Anthropic({
@@ -181,24 +187,34 @@ Place 5-12 concepts organically - some clustered, some isolated.`;
 
     console.log(`🤖 Calling Claude Haiku for organic terrain generation...`);
     
-    const response = await this.client.messages.create({
-      model: 'claude-3-5-haiku-latest',
-      max_tokens: 2048,
-      temperature: 0.8,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
-    });
-    
-    const content = response.content[0];
-    if (content.type === 'text') {
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        console.log(`✨ Generated ${parsed.concepts.length} concepts organically`);
-        return parsed;
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-3-5-haiku-latest',
+        max_tokens: 2048,
+        temperature: 0.8,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+      
+      console.log(`📝 Claude response received`);
+      
+      const content = response.content[0];
+      if (content.type === 'text') {
+        console.log(`📜 Response text length: ${content.text.length}`);
+        const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          console.log(`✨ Generated ${parsed.concepts.length} concepts organically`);
+          return parsed;
+        } else {
+          console.error('❌ No JSON found in response:', content.text.substring(0, 200));
+        }
       }
+    } catch (error) {
+      console.error('❌ Claude API error:', error);
+      throw error;
     }
     
     throw new Error('Failed to parse Claude response');
@@ -450,17 +466,45 @@ Place 5-12 concepts organically - some clustered, some isolated.`;
       let row = '';
       for (let x = 0; x < CHUNK_SIZE; x++) {
         const noise = Math.random();
-        if (noise < 0.1) row += '░';
+        if (noise < 0.05) row += '▒';
+        else if (noise < 0.1) row += '░';
         else if (noise < 0.2) row += '·';
         else row += '·';
       }
       terrain.push(row);
     }
     
-    // Add center concept
-    const centerY = 8;
+    // Add center concept with some variation
+    const centerX = 6 + Math.floor(Math.random() * 4);
+    const centerY = 6 + Math.floor(Math.random() * 4);
     const name = centerConcept.substring(0, 8).toUpperCase();
-    terrain[centerY] = terrain[centerY].substring(0, 4) + name + terrain[centerY].substring(4 + name.length);
+    terrain[centerY] = terrain[centerY].substring(0, centerX) + name + terrain[centerY].substring(centerX + name.length);
+    
+    // Create a basic sacred site
+    const globalX = chunkX * CHUNK_SIZE + centerX;
+    const globalY = chunkY * CHUNK_SIZE + centerY;
+    
+    const site: SacredSite = {
+      id: `site_${globalX}_${globalY}`,
+      position: { x: globalX, y: globalY },
+      glyph: '▲',
+      conceptName: centerConcept,
+      siteType: 'pyramid',
+      explanation: `The essence of ${centerConcept} - a fundamental concept in this semantic space`,
+      wisdomDensity: 0.7,
+      pilgrims: 0,
+      leyLines: []
+    };
+    
+    const conceptNode: ConceptNode = {
+      name: centerConcept,
+      position: { x: globalX, y: globalY },
+      elevation: 0.7,
+      visited: false,
+      semanticDistance: 0,
+      explanation: `Core concept: ${centerConcept}`,
+      fact: 'Ancient wisdom awaits discovery'
+    };
     
     const chunk: TerrainChunk = {
       x: chunkX,
@@ -470,7 +514,7 @@ Place 5-12 concepts organically - some clustered, some isolated.`;
       discoveredAt: Date.now()
     };
     
-    return { chunk, sites: [], newConcepts: [] };
+    return { chunk, sites: [site], newConcepts: [conceptNode] };
   }
   
   getConceptMap(): Map<string, ConceptNode> {

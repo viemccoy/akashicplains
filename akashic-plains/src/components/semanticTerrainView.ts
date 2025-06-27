@@ -128,6 +128,8 @@ function getNearbyConcepts(
 ): ConceptInfo[] {
   const concepts: ConceptInfo[] = [];
   
+  console.log(`📍 Getting nearby concepts. Found ${nearbyLocations.length} locations`);
+  
   for (const site of nearbyLocations) {
     const dx = site.position.x - playerPos.x;
     const dy = site.position.y - playerPos.y;
@@ -136,13 +138,17 @@ function getNearbyConcepts(
     // Get additional info from concept map if available
     const conceptData = conceptMap?.get(site.conceptName);
     
-    concepts.push({
+    const conceptInfo = {
       name: site.conceptName,
       symbol: site.glyph,
-      explanation: site.explanation,
-      fact: conceptData?.fact,
+      explanation: site.explanation || `The essence of ${site.conceptName}`,
+      fact: conceptData?.fact || 'Ancient wisdom',
       distance
-    });
+    };
+    
+    console.log(`  - ${conceptInfo.name}: ${conceptInfo.explanation}`);
+    
+    concepts.push(conceptInfo);
   }
   
   // Sort by distance

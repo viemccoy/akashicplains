@@ -70,14 +70,7 @@ export function renderGameScreen(state: GameState): string {
       </div>
       
       <div class="info-panel">
-        <div class="location-title">SHIFTING SANDS</div>
-        <div class="location-description">
-          The endless desert stretches before you, each grain of sand a potential
-          thought waiting to be discovered. Use WASD or arrow keys to explore.
-        </div>
-        <div class="quote">
-          "In the beginning was the Word, and the Word was scattered across infinite sands..."
-        </div>
+        <!-- Content will be dynamically inserted here -->
       </div>
     </div>
   `;
