@@ -1,4 +1,5 @@
-import type { TerrainTile, Concept, Synthesis } from './EnhancedSemanticEngine';
+import type { TerrainTile, Concept } from './EnhancedSemanticEngine';
+import type { GlobalSynthesis } from './RichSemanticEngine';
 
 export class TerrainRenderer {
   private playerIcon = '☉'; // Sun symbol for the explorer
@@ -8,7 +9,7 @@ export class TerrainRenderer {
   renderTerrain(
     tiles: TerrainTile[][],
     concepts: Concept[],
-    syntheses: Synthesis[],
+    syntheses: GlobalSynthesis[],
     playerX: number,
     playerY: number,
     otherPlayers: Array<{ x: number; y: number; name: string }>
@@ -23,7 +24,7 @@ export class TerrainRenderer {
       conceptMap.set(key, concept);
     }
     
-    const synthesisMap = new Map<string, Synthesis>();
+    const synthesisMap = new Map<string, GlobalSynthesis>();
     for (const synthesis of syntheses) {
       const key = `${synthesis.position.x},${synthesis.position.y}`;
       synthesisMap.set(key, synthesis);
@@ -118,16 +119,17 @@ export class TerrainRenderer {
     return '◦'; // Valley - concrete examples
   }
   
-  renderConceptInfo(concept: Concept | null, synthesis: Synthesis | null): string {
+  renderConceptInfo(concept: Concept | null, synthesis: GlobalSynthesis | null): string {
     if (synthesis) {
       return `
         <div class="synthesis-info">
           <h3 class="synthesis-name">✨ ${synthesis.name} ✨</h3>
           <div class="synthesis-source">Synthesized from: ${synthesis.sourceWords.join(' + ')}</div>
           <div class="synthesis-definition">${synthesis.definition}</div>
+          ${synthesis.revelation ? `<div class="synthesis-revelation">${synthesis.revelation}</div>` : ''}
           <div class="synthesis-meta">
             Created by ${synthesis.createdBy} | 
-            Collected by ${synthesis.collectedBy.size} explorers
+            Discovered by ${synthesis.discoveredBy.size} explorers
           </div>
         </div>
       `;

@@ -1,19 +1,19 @@
-import { EnhancedSemanticEngine } from './engine/EnhancedSemanticEngine';
+import { RichSemanticEngine } from './engine/RichSemanticEngine';
 import { TerrainRenderer } from './engine/TerrainRenderer';
 import './style.css';
 import './semantic-explorer.css';
 
 export class SemanticExplorerGame {
-  private engine: EnhancedSemanticEngine;
+  private engine: RichSemanticEngine;
   private renderer: TerrainRenderer;
-  private playerPos = { x: 32, y: 32 }; // Start at center of 64x64 world
+  private playerPos = { x: 128, y: 128 }; // Start at center of 256x256 world
   private playerId: string;
   private playerName: string;
   private currentConcept: any = null;
   private currentSynthesis: any = null;
   
   constructor(apiKey: string, playerName: string) {
-    this.engine = new EnhancedSemanticEngine(apiKey);
+    this.engine = new RichSemanticEngine(apiKey);
     this.renderer = new TerrainRenderer();
     this.playerId = `player-${Date.now()}`;
     this.playerName = playerName;
@@ -82,9 +82,13 @@ export class SemanticExplorerGame {
     this.playerPos.y = newY;
     
     // Explore the new tile
-    const concept = await this.engine.exploreTile(newX, newY, this.playerId);
-    if (concept) {
-      console.log(`Discovered: ${concept.word}`);
+    const discovery = await this.engine.exploreTile(newX, newY, this.playerId);
+    if (discovery) {
+      if ('word' in discovery) {
+        console.log(`Discovered concept: ${discovery.word}`);
+      } else {
+        console.log(`Discovered synthesis: ${discovery.name}`);
+      }
     }
     
     this.render();

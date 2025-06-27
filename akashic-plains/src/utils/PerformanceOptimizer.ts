@@ -12,7 +12,7 @@ export class PerformanceOptimizer {
     delay: number
   ): (...args: Parameters<T>) => void {
     let lastCall = 0;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     
     return (...args: Parameters<T>) => {
       const now = Date.now();
@@ -36,7 +36,7 @@ export class PerformanceOptimizer {
     func: T,
     delay: number
   ): (...args: Parameters<T>) => void {
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     
     return (...args: Parameters<T>) => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -124,7 +124,9 @@ export class PerformanceOptimizer {
       // Limit cache size
       if (cache.size > maxCacheSize) {
         const firstKey = cache.keys().next().value;
-        cache.delete(firstKey);
+        if (firstKey !== undefined) {
+          cache.delete(firstKey);
+        }
       }
       
       return result;
