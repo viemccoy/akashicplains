@@ -1,5 +1,5 @@
 import type { GameState, SacredSite, Synthesis, Position } from '../types';
-import { SemanticTerrainGenerator } from '../agents/semanticTerrainGenerator';
+import { EnhancedSemanticGenerator } from '../agents/enhancedSemanticGenerator';
 import { SynthesisManager } from './synthesisManager';
 import { getChunkKey, getChunkFromGlobal } from '../utils/terrain';
 import { TERRAIN_SYMBOLS } from '../types';
@@ -13,7 +13,7 @@ interface ConceptNode {
 
 export class SemanticGameManager {
   private state: GameState;
-  private terrainGenerator: SemanticTerrainGenerator;
+  private terrainGenerator: EnhancedSemanticGenerator;
   private synthesisManager: SynthesisManager;
   private loadingChunks: Set<string> = new Set();
   private playerPath: string[] = [];
@@ -23,7 +23,7 @@ export class SemanticGameManager {
   
   constructor(state: GameState) {
     this.state = state;
-    this.terrainGenerator = new SemanticTerrainGenerator(state.apiKey!);
+    this.terrainGenerator = new EnhancedSemanticGenerator(state.apiKey!);
     this.synthesisManager = new SynthesisManager(state.apiKey!);
     
     // Initialize with seed concept at origin
@@ -111,7 +111,8 @@ export class SemanticGameManager {
         chunkX,
         chunkY,
         nearestConcepts,
-        this.movementDirection
+        this.movementDirection,
+        this.state.seedConcept
       );
       
       // Store the chunk
@@ -355,5 +356,51 @@ export class SemanticGameManager {
   
   getTrailIntensity(): Map<string, number> {
     return this.trailIntensity;
+  }
+  
+  getTerrainInfo(): { symbol: string, elevation: number, concept?: string } | null {
+    const { x, y } = this.state.playerPosition;
+    const { chunkX, chunkY } = getChunkFromGlobal(x, y);
+    const chunk = this.state.visitedChunks.get(getChunkKey(chunkX, chunkY));
+    
+    if (!chunk) return null;
+    
+    const localX = x % 16;
+    const localY = y % 16;
+    const symbol = chunk.terrain[localY]?.[localX] || '·';
+    
+    // Find dominant concept for this position
+    let nearestConcept: string | undefined;
+    let minDistance = Infinity;
+    
+    for (const [name, node] of this.conceptNodes) {
+      const dist = Math.sqrt(
+        Math.pow(node.position.x - x, 2) + 
+        Math.pow(node.position.y - y, 2)
+      );
+      if (dist < minDistance && dist < 10) {
+        minDistance = dist;
+        nearestConcept = name;
+      }
+    }
+    
+    // Estimate elevation from symbol
+    const elevationMap: Record<string, number> = {
+      '·': 0.1,
+      '░': 0.2,
+      '▒': 0.4,
+      '▓': 0.6,
+      '█': 0.8,
+      '▀': 1.0,
+      '◉': 0.9,
+      '●': 0.8,
+      '◐': 0.7
+    };
+    
+    return {
+      symbol,
+      elevation: elevationMap[symbol] || 0.5,
+      concept: nearestConcept
+    };
   }
 }

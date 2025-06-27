@@ -726,3 +726,32 @@ body {
   box-shadow: 0 0 10px var(--color-purple);
   text-shadow: 0 0 5px var(--color-purple);
 }
+
+/* Enhanced Location Info */
+.terrain-symbol {
+  color: var(--color-amber);
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.elevation-info {
+  color: var(--color-cyan);
+  font-size: 14px;
+  margin: 5px 0;
+  font-style: italic;
+}
+
+.semantic-info {
+  color: var(--color-gold);
+  font-size: 13px;
+  margin: 15px 0;
+  padding: 10px;
+  border-left: 2px solid var(--color-gold);
+  background: rgba(218, 165, 32, 0.05);
+}
+
+.concept-highlight {
+  color: var(--color-purple);
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--color-purple);
+}
