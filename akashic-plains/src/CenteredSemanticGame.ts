@@ -49,7 +49,7 @@ export class CenteredSemanticGame {
       // Check if we're in development or production
       const wsUrl = window.location.hostname === 'localhost' 
         ? 'ws://localhost:8787' 
-        : 'wss://akashic-plains-multiplayer.workers.dev';
+        : 'wss://akashic-plains-multiplayer.viemccoy.workers.dev';
       
       this.multiplayer = new MultiplayerClient(this.playerId, this.playerName);
       

@@ -240,8 +240,8 @@ export class WorldState {
         `INSERT INTO syntheses (
           id, name, definition, revelation, symbol,
           source_words, position_x, position_y,
-          created_by, created_at, discovered_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          created_by, created_at, discovered_by, coordinates
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         data.synthesis.id,
         data.synthesis.name,
@@ -253,7 +253,8 @@ export class WorldState {
         data.synthesis.position.y,
         data.synthesis.createdBy,
         data.synthesis.createdAt,
-        JSON.stringify(Array.from(data.synthesis.discoveredBy))
+        JSON.stringify(Array.from(data.synthesis.discoveredBy)),
+        data.synthesis.coordinates
       ).run();
       
       // Update player stats
