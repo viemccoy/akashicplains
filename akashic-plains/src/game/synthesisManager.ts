@@ -1,6 +1,5 @@
 import type { SacredSite, Synthesis, Position } from '../types';
 import { ClaudeClient } from '../agents/claudeClient';
-import { TERRAIN_SYMBOLS } from '../types';
 
 export class SynthesisManager {
   private claude: ClaudeClient;

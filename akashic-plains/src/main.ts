@@ -4,10 +4,25 @@ import { initializeGame, GameManager } from './game';
 import { renderAPIKeyScreen } from './components/apiKeyScreen';
 import { renderGameScreen } from './components/gameScreen';
 import { renderLocationInfo } from './components/locationInfo';
+import { renderSynthesisModal } from './components/synthesisModal';
+import { NotificationManager } from './utils/notifications';
+import { StorageManager } from './utils/storage';
+import { ParticleSystem } from './effects/particles';
+import { DayNightCycle } from './effects/dayNightCycle';
 
 let gameState: GameState | null = null;
 let gameManager: GameManager | null = null;
 let isProcessingMove = false;
+let showingSynthesisModal = false;
+
+// Initialize systems
+const notifications = new NotificationManager();
+const storage = new StorageManager();
+const particles = new ParticleSystem();
+const dayNight = new DayNightCycle(() => {
+  // Update UI based on time of day
+  // Could show time description in the UI somewhere
+});
 
 function render() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -17,6 +32,13 @@ function render() {
     setupAPIKeyHandlers();
   } else {
     app.innerHTML = renderGameScreen(gameState);
+    
+    // Add synthesis modal if showing
+    if (showingSynthesisModal) {
+      app.insertAdjacentHTML('beforeend', renderSynthesisModal(gameState.bookmarkedSites));
+      setupSynthesisHandlers();
+    }
+    
     setupGameHandlers();
     updateLocationInfo();
   }
@@ -38,6 +60,28 @@ function setupAPIKeyHandlers() {
   const button = document.querySelector<HTMLButtonElement>('.button');
   
   if (input && button) {
+    // Check for saved game
+    if (storage.hasSave()) {
+      const loadButton = document.createElement('button');
+      loadButton.className = 'button';
+      loadButton.textContent = 'Load Previous Journey';
+      loadButton.style.marginTop = '10px';
+      button.parentElement?.appendChild(loadButton);
+      
+      loadButton.addEventListener('click', () => {
+        const apiKey = input.value.trim();
+        if (apiKey) {
+          const loadedState = storage.loadGameState(apiKey);
+          if (loadedState) {
+            gameState = loadedState;
+            gameManager = new GameManager(gameState);
+            notifications.show('Welcome back, wanderer...', 'info');
+            render();
+          }
+        }
+      });
+    }
+    
     const handleSubmit = async () => {
       const apiKey = input.value.trim();
       if (apiKey) {
@@ -51,6 +95,11 @@ function setupAPIKeyHandlers() {
           // Load initial chunks
           await gameManager.ensureNearbyChunksLoaded();
           
+          // Start effects
+          particles.start();
+          dayNight.start();
+          
+          notifications.show('The Akashic Plains awaken before you...', 'info');
           render();
         } catch (error) {
           console.error('Failed to initialize game:', error);
@@ -86,12 +135,65 @@ function setupGameHandlers() {
   // Setup synthesize button
   const synthesizeBtn = document.querySelector('.synthesize-button');
   if (synthesizeBtn && gameManager) {
-    synthesizeBtn.addEventListener('click', handleSynthesize);
+    synthesizeBtn.addEventListener('click', () => {
+      showingSynthesisModal = true;
+      render();
+    });
+  }
+}
+
+function setupSynthesisHandlers() {
+  const cancelBtn = document.getElementById('cancel-synthesis');
+  const performBtn = document.getElementById('perform-synthesis');
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      showingSynthesisModal = false;
+      render();
+    });
+  }
+  
+  if (performBtn && gameManager) {
+    performBtn.addEventListener('click', async () => {
+      // Show processing animation
+      const modal = document.querySelector('.synthesis-modal');
+      if (modal) {
+        modal.classList.add('processing');
+        modal.innerHTML = renderSynthesisModal([], true).match(/<div class="crystallization-animation">[\s\S]*<\/div>/)?.[0] || '';
+      }
+      
+      try {
+        const synthesis = await gameManager!.performSynthesis();
+        if (synthesis) {
+          gameState = gameManager!.getState();
+          
+          // Show notification
+          notifications.showSynthesis(synthesis.name);
+          
+          // Create particle effect at player position
+          const mapRect = document.querySelector('.map-viewport')?.getBoundingClientRect();
+          if (mapRect) {
+            particles.createCrystalFormation(
+              mapRect.left + mapRect.width / 2,
+              mapRect.top + mapRect.height / 2
+            );
+          }
+          
+          showingSynthesisModal = false;
+          render();
+        }
+      } catch (error) {
+        console.error('Synthesis failed:', error);
+        notifications.show('The synthesis failed... try again with different concepts.', 'info');
+        showingSynthesisModal = false;
+        render();
+      }
+    });
   }
 }
 
 async function handleKeyPress(e: KeyboardEvent) {
-  if (!gameState || !gameManager || isProcessingMove) return;
+  if (!gameState || !gameManager || isProcessingMove || showingSynthesisModal) return;
   
   let dx = 0, dy = 0;
   
@@ -117,6 +219,13 @@ async function handleKeyPress(e: KeyboardEvent) {
       const location = gameManager.getCurrentLocation();
       if (location) {
         gameManager.bookmarkSite(location);
+        notifications.show(`Bookmarked: ${location.conceptName}`, 'info');
+        render();
+      }
+      return;
+    case 'Escape':
+      if (showingSynthesisModal) {
+        showingSynthesisModal = false;
         render();
       }
       return;
@@ -129,8 +238,25 @@ async function handleKeyPress(e: KeyboardEvent) {
   // Process move
   isProcessingMove = true;
   try {
+    const prevLocation = gameManager.getCurrentLocation();
     await gameManager.movePlayer(dx, dy);
     gameState = gameManager.getState();
+    
+    // Check for new discovery
+    const newLocation = gameManager.getCurrentLocation();
+    if (newLocation && newLocation !== prevLocation && newLocation.pilgrims === 1) {
+      notifications.showDiscovery(newLocation.conceptName, newLocation.siteType);
+      
+      // Particle burst for discovery
+      const mapRect = document.querySelector('.map-viewport')?.getBoundingClientRect();
+      if (mapRect) {
+        particles.createDiscoveryBurst(
+          mapRect.left + mapRect.width / 2,
+          mapRect.top + mapRect.height / 2
+        );
+      }
+    }
+    
     render();
   } catch (error) {
     console.error('Movement failed:', error);
@@ -139,17 +265,14 @@ async function handleKeyPress(e: KeyboardEvent) {
   }
 }
 
-async function handleSynthesize() {
-  if (!gameManager || !gameManager.canSynthesize()) return;
-  
-  // TODO: Implement synthesis
-  console.log('Synthesis not yet implemented');
-}
-
 // Energy regeneration
 setInterval(() => {
   if (gameState && gameState.energy < gameState.maxEnergy) {
-    gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + 0.1);
+    // Apply time-based modifiers
+    const timeModifiers = (window as any).timeModifiers || { energyRegen: 1.0 };
+    const regenRate = 0.1 * timeModifiers.energyRegen;
+    
+    gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + regenRate);
     
     // Update energy bar
     const energyFill = document.querySelector('.energy-fill') as HTMLElement;
@@ -159,6 +282,20 @@ setInterval(() => {
     }
   }
 }, 1000);
+
+// Auto-save every 30 seconds
+setInterval(() => {
+  if (gameState && gameManager) {
+    storage.saveGameState(gameState);
+  }
+}, 30000);
+
+// Save on page unload
+window.addEventListener('beforeunload', () => {
+  if (gameState) {
+    storage.saveGameState(gameState);
+  }
+});
 
 // Initial render
 render();

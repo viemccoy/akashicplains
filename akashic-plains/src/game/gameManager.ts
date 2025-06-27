@@ -1,21 +1,33 @@
-import type { GameState, SacredSite } from '../types';
+import type { GameState, SacredSite, Synthesis } from '../types';
 import { TerrainGenerator } from '../agents/terrainGenerator';
+import { SynthesisManager } from './synthesisManager';
 import { getChunkKey, getChunkFromGlobal } from '../utils/terrain';
+import { TERRAIN_SYMBOLS } from '../types';
 
 export class GameManager {
   private state: GameState;
   private terrainGenerator: TerrainGenerator;
+  private synthesisManager: SynthesisManager;
   private loadingChunks: Set<string> = new Set();
+  private playerPath: string[] = [];
   
   constructor(state: GameState) {
     this.state = state;
     this.terrainGenerator = new TerrainGenerator(state.apiKey!);
+    this.synthesisManager = new SynthesisManager(state.apiKey!);
   }
   
   async movePlayer(dx: number, dy: number): Promise<void> {
     // Update player position
     this.state.playerPosition.x += dx;
     this.state.playerPosition.y += dy;
+    
+    // Track player path for synthesis
+    const direction = dx > 0 ? 'E' : dx < 0 ? 'W' : dy > 0 ? 'S' : 'N';
+    this.playerPath.push(direction);
+    if (this.playerPath.length > 100) {
+      this.playerPath.shift();
+    }
     
     // Check if we've moved to a new chunk
     const { chunkX, chunkY } = getChunkFromGlobal(
@@ -174,6 +186,61 @@ export class GameManager {
   
   canSynthesize(): boolean {
     return this.state.bookmarkedSites.length >= 2 && this.state.energy >= 30;
+  }
+  
+  async performSynthesis(): Promise<Synthesis | null> {
+    if (!this.canSynthesize()) return null;
+    
+    try {
+      // Perform the synthesis
+      const synthesis = await this.synthesisManager.performSynthesis(
+        this.state.bookmarkedSites,
+        this.playerPath.join(''),
+        this.state.playerPosition
+      );
+      
+      // Clear bookmarks
+      this.state.bookmarkedSites = [];
+      
+      // Consume energy
+      this.state.energy = Math.max(0, this.state.energy - 30);
+      
+      // Add crystal to the map
+      const { chunkX, chunkY } = getChunkFromGlobal(
+        synthesis.position.x,
+        synthesis.position.y
+      );
+      const chunkKey = getChunkKey(chunkX, chunkY);
+      const chunk = this.state.visitedChunks.get(chunkKey);
+      
+      if (chunk) {
+        // Add crystal to terrain
+        const localX = synthesis.position.x % 16;
+        const localY = synthesis.position.y % 16;
+        const row = chunk.terrain[localY];
+        chunk.terrain[localY] = row.substring(0, localX) + TERRAIN_SYMBOLS.CRYSTALS + row.substring(localX + 1);
+      }
+      
+      // Create a sacred site for the crystal
+      const crystalSite: SacredSite = {
+        id: synthesis.id,
+        position: synthesis.position,
+        glyph: TERRAIN_SYMBOLS.CRYSTALS,
+        conceptName: synthesis.name,
+        siteType: 'crystals',
+        explanation: synthesis.revelation,
+        wisdomDensity: 1.0,
+        pilgrims: 0,
+        leyLines: []
+      };
+      
+      this.state.discoveredSites.set(crystalSite.id, crystalSite);
+      
+      return synthesis;
+    } catch (error) {
+      console.error('Synthesis failed:', error);
+      return null;
+    }
   }
   
   getState(): GameState {

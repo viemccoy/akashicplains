@@ -447,3 +447,201 @@ body {
   from { text-shadow: 0 0 20px var(--color-gold); }
   to { text-shadow: 0 0 30px var(--color-gold), 0 0 40px var(--color-amber); }
 }
+
+/* Synthesis Modal */
+.synthesis-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.synthesis-modal {
+  max-width: 700px;
+  width: 90%;
+  border: 2px solid var(--color-purple);
+  background: var(--color-bg);
+  padding: 30px;
+  box-shadow: 0 0 30px var(--color-purple);
+}
+
+.synthesis-modal.processing {
+  text-align: center;
+}
+
+.synthesis-title {
+  color: var(--color-purple);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 0 10px var(--color-purple);
+}
+
+.synthesis-description {
+  color: var(--color-sand);
+  margin: 20px 0;
+  line-height: 1.6;
+}
+
+.bookmarked-concepts {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid var(--color-purple);
+  background: rgba(147, 112, 219, 0.05);
+}
+
+.concept-item {
+  display: inline-block;
+  margin: 5px 10px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-amber);
+  background: rgba(255, 176, 0, 0.1);
+}
+
+.concept-glyph {
+  color: var(--color-purple);
+  font-weight: bold;
+  margin-right: 5px;
+  text-shadow: 0 0 5px currentColor;
+}
+
+.concept-name {
+  color: var(--color-gold);
+}
+
+.synthesis-warning {
+  color: var(--color-amber);
+  font-style: italic;
+  margin: 20px 0;
+  padding: 10px;
+  border-left: 2px solid var(--color-amber);
+}
+
+.modal-footer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.crystallization-animation {
+  margin: 40px 0;
+}
+
+.crystal-forming {
+  color: var(--color-purple);
+  font-size: 20px;
+  line-height: 1;
+  margin: 20px 0;
+  animation: crystal-pulse 1s ease-in-out infinite;
+}
+
+@keyframes crystal-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    text-shadow: 0 0 20px var(--color-purple);
+  }
+  50% { 
+    transform: scale(1.1);
+    text-shadow: 0 0 40px var(--color-purple), 0 0 60px var(--color-amber);
+  }
+}
+
+.processing-text {
+  color: var(--color-sand);
+  line-height: 2;
+  animation: text-fade 3s ease-in-out infinite;
+}
+
+@keyframes text-fade {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Notification Toast */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  padding: 15px 20px;
+  border: 1px solid var(--color-gold);
+  background: rgba(0, 0, 0, 0.9);
+  color: var(--color-gold);
+  box-shadow: 0 0 20px var(--color-gold);
+  animation: slide-in 0.3s ease-out;
+  z-index: 3000;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.discovery {
+  border-color: var(--color-purple);
+  box-shadow: 0 0 20px var(--color-purple);
+}
+
+.notification.synthesis {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 30px var(--color-cyan);
+}
+
+/* Particle Effects Container */
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sand-particle {
+  position: absolute;
+  color: var(--color-sand);
+  opacity: 0.3;
+  animation: drift 20s linear infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-100px) translateY(-100px);
+  }
+  to {
+    transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px));
+  }
+}
+
+/* Day/Night Cycle Effects */
+.terminal-container.night {
+  filter: brightness(0.7) contrast(1.2);
+}
+
+.terminal-container.night .map-viewport {
+  background: rgba(0, 0, 50, 0.1);
+}
+
+.terminal-container.dawn {
+  filter: brightness(0.85) sepia(0.2);
+}
+
+.terminal-container.dusk {
+  filter: brightness(0.9) sepia(0.3) hue-rotate(10deg);
+}
