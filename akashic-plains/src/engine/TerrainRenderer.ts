@@ -99,7 +99,7 @@ export class TerrainRenderer {
   }
   
   private getTerrainChar(elevation: number): string {
-    // Fog of war makes low visibility areas darker
+    // ASCII terrain based on elevation
     if (elevation < 0.1) return ' ';
     if (elevation < 0.2) return '.';
     if (elevation < 0.3) return '·';

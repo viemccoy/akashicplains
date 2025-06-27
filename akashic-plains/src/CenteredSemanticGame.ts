@@ -1,11 +1,15 @@
 import { RichSemanticEngine, type GlobalSynthesis } from './engine/RichSemanticEngine';
 import { TerrainRenderer } from './engine/TerrainRenderer';
+import { MultiplayerClient, type PlayerState } from './multiplayer/MultiplayerClient';
+import { GlobalDiscoveryFeed } from './components/GlobalDiscoveryFeed';
 import './style.css';
 import './ui/CenteredUI.css';
 
 export class CenteredSemanticGame {
   private engine: RichSemanticEngine;
   private renderer: TerrainRenderer;
+  private multiplayer?: MultiplayerClient;
+  private discoveryFeed: GlobalDiscoveryFeed;
   private playerPos = { x: 128, y: 128 }; // Start at center of larger world
   private playerId: string;
   private playerName: string;
@@ -13,10 +17,13 @@ export class CenteredSemanticGame {
   private currentSynthesis: any = null;
   private discoveries = 0;
   private totalConcepts = 0;
+  private otherPlayers: PlayerState[] = [];
+  private multiplayerEnabled = false;
   
   constructor(apiKey: string, playerName: string) {
     this.engine = new RichSemanticEngine(apiKey);
     this.renderer = new TerrainRenderer();
+    this.discoveryFeed = new GlobalDiscoveryFeed();
     this.playerId = `player-${Date.now()}`;
     this.playerName = playerName;
     
@@ -27,10 +34,101 @@ export class CenteredSemanticGame {
     console.log(`🚀 Initializing vast semantic world with: ${seedWord}`);
     const concepts = await this.engine.initializeWithSeed(seedWord);
     this.totalConcepts = concepts.size;
+    
+    // Initialize multiplayer if available
+    await this.initializeMultiplayer();
+    
+    // Add discovery feed to DOM
+    document.body.appendChild(this.discoveryFeed.getElement());
+    
     this.render();
   }
   
+  private async initializeMultiplayer() {
+    try {
+      // Check if we're in development or production
+      const wsUrl = window.location.hostname === 'localhost' 
+        ? 'ws://localhost:8787' 
+        : 'wss://akashic-plains-multiplayer.workers.dev';
+      
+      this.multiplayer = new MultiplayerClient(this.playerId, this.playerName);
+      
+      // Setup multiplayer event handlers
+      this.multiplayer.onPlayerJoined = (player) => {
+        console.log(`🌟 ${player.name} joined the plains`);
+        this.otherPlayers = this.multiplayer!.getPlayers();
+        this.render();
+      };
+      
+      this.multiplayer.onPlayerLeft = (playerId) => {
+        console.log(`👋 Player left: ${playerId}`);
+        this.otherPlayers = this.multiplayer!.getPlayers();
+        this.render();
+      };
+      
+      this.multiplayer.onPlayerMoved = (player) => {
+        this.otherPlayers = this.multiplayer!.getPlayers();
+        this.render();
+      };
+      
+      this.multiplayer.onDiscovery = (discovery) => {
+        console.log(`🔍 ${discovery.playerName} discovered ${discovery.conceptWord}`);
+        this.discoveryFeed.addDiscovery(
+          'concept',
+          discovery.playerName,
+          discovery.playerId,
+          discovery.conceptWord,
+          discovery.position
+        );
+      };
+      
+      this.multiplayer.onSynthesisCreated = (data) => {
+        console.log(`✨ ${data.creatorName} created synthesis: ${data.synthesis.name}`);
+        // Add to local engine
+        this.engine.addGlobalSynthesis(data.synthesis);
+        // Add to discovery feed
+        this.discoveryFeed.addDiscovery(
+          'synthesis',
+          data.creatorName,
+          data.synthesis.createdBy,
+          data.synthesis.name,
+          data.synthesis.position,
+          data.synthesis.coordinates
+        );
+        this.render();
+      };
+      
+      this.multiplayer.onConnectionStateChange = (connected) => {
+        this.multiplayerEnabled = connected;
+        console.log(`🌐 Multiplayer: ${connected ? 'Connected' : 'Disconnected'}`);
+        this.render();
+      };
+      
+      // Attempt connection
+      await this.multiplayer.connect(wsUrl);
+      
+    } catch (error) {
+      console.warn('Multiplayer not available:', error);
+      this.multiplayerEnabled = false;
+    }
+  }
+  
   private setupEventHandlers() {
+    // Handle teleport events from discovery feed
+    window.addEventListener('teleport-to-coordinates', (e: any) => {
+      const { coordinates } = e.detail;
+      const position = this.engine.teleportToCoordinates(coordinates);
+      if (position) {
+        this.playerPos = { ...position };
+        this.render();
+        
+        // Broadcast new position
+        if (this.multiplayer && this.multiplayerEnabled) {
+          this.multiplayer.sendPosition(this.playerPos.x, this.playerPos.y);
+        }
+      }
+    });
+    
     document.addEventListener('keydown', async (e) => {
       let dx = 0, dy = 0;
       let handled = true;
@@ -91,12 +189,31 @@ export class CenteredSemanticGame {
     this.playerPos.x = newX;
     this.playerPos.y = newY;
     
+    // Broadcast position to other players
+    if (this.multiplayer && this.multiplayerEnabled) {
+      this.multiplayer.sendPosition(newX, newY);
+    }
+    
     // Explore the new tile
     const discovery = await this.engine.exploreTile(newX, newY, this.playerId);
     if (discovery) {
       if ('word' in discovery) {
         console.log(`📖 Discovered: ${discovery.word}`);
         this.discoveries++;
+        
+        // Add to local discovery feed
+        this.discoveryFeed.addDiscovery(
+          'concept',
+          this.playerName,
+          this.playerId,
+          discovery.word,
+          { x: newX, y: newY }
+        );
+        
+        // Broadcast discovery to other players
+        if (this.multiplayer && this.multiplayerEnabled) {
+          this.multiplayer.sendDiscovery(discovery.word, { x: newX, y: newY });
+        }
       } else {
         console.log(`✨ Found synthesis: ${discovery.name}`);
       }
@@ -122,6 +239,13 @@ export class CenteredSemanticGame {
       s.position.x === this.playerPos.x && s.position.y === this.playerPos.y
     );
     
+    // Convert PlayerState to format expected by renderer
+    const otherPlayersForRender = this.otherPlayers.map(p => ({
+      x: p.position.x,
+      y: p.position.y,
+      name: p.name
+    }));
+    
     // Render terrain
     const terrainLines = this.renderer.renderTerrain(
       tiles,
@@ -129,7 +253,7 @@ export class CenteredSemanticGame {
       syntheses,
       this.playerPos.x,
       this.playerPos.y,
-      [] // Other players would go here
+      otherPlayersForRender
     );
     
     // Get bookmarks
@@ -156,6 +280,12 @@ export class CenteredSemanticGame {
               <span class="stat-label">Discoveries:</span>
               <span class="stat-value">${this.discoveries}</span>
             </div>
+            ${this.multiplayerEnabled ? `
+              <div class="stat">
+                <span class="stat-label">Online:</span>
+                <span class="stat-value" style="color: #00ff00;">●${this.otherPlayers.length + 1}</span>
+              </div>
+            ` : ''}
           </div>
         </header>
         
@@ -185,7 +315,7 @@ export class CenteredSemanticGame {
         
         <footer class="status-bar">
           <div class="controls-hint">
-            WASD/↑↓←→: Move | B: Bookmark | T: Teleport | G: Global Syntheses
+            WASD/↑↓←→: Move | B: Bookmark | T: Teleport | G: Global Syntheses | Click coordinates in feed to teleport
           </div>
           <div class="discovery-progress">
             <span>Exploration Progress:</span>
@@ -404,11 +534,31 @@ export class CenteredSemanticGame {
       console.log(`✨ Created synthesis: ${synthesis.name}`);
       console.log(`📍 Coordinates: ${synthesis.coordinates}`);
       
+      // Add to local discovery feed
+      this.discoveryFeed.addDiscovery(
+        'synthesis',
+        this.playerName,
+        this.playerId,
+        synthesis.name,
+        synthesis.position,
+        synthesis.coordinates
+      );
+      
+      // Broadcast synthesis to other players
+      if (this.multiplayer && this.multiplayerEnabled) {
+        this.multiplayer.sendSynthesisCreated(synthesis);
+      }
+      
       // Clear bookmarks
       bookmarks.forEach(b => this.engine.bookmarkConcept(b.id));
       
       // Teleport to synthesis location
       this.playerPos = { ...synthesis.position };
+      
+      // Broadcast new position
+      if (this.multiplayer && this.multiplayerEnabled) {
+        this.multiplayer.sendPosition(this.playerPos.x, this.playerPos.y);
+      }
     }
     
     this.render();

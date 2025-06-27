@@ -393,14 +393,6 @@ export class RichSemanticEngine {
     return globalSynth;
   }
   
-  teleportToCoordinates(coordinates: string): { x: number; y: number } | null {
-    const synthesis = this.globalSyntheses.find(s => s.coordinates === coordinates);
-    if (synthesis) {
-      console.log(`🌀 Teleporting to ${synthesis.name}`);
-      return synthesis.position;
-    }
-    return null;
-  }
   
   getGlobalSyntheses(): GlobalSynthesis[] {
     return this.globalSyntheses;
@@ -503,5 +495,27 @@ export class RichSemanticEngine {
   
   private generateId(word: string): string {
     return word.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+  }
+  
+  teleportToCoordinates(coords: string): { x: number; y: number } | null {
+    // Find synthesis with matching coordinates
+    const synthesis = this.globalSyntheses.find(s => s.coordinates === coords);
+    if (synthesis) {
+      return synthesis.position;
+    }
+    return null;
+  }
+  
+  addGlobalSynthesis(synthesis: GlobalSynthesis) {
+    // Add to global syntheses if not already present
+    if (!this.globalSyntheses.find(s => s.id === synthesis.id)) {
+      this.globalSyntheses.push(synthesis);
+      this.syntheses.set(synthesis.id, synthesis);
+      
+      // Mark terrain tile
+      const tile = this.terrain[synthesis.position.y][synthesis.position.x];
+      tile.synthesisId = synthesis.id;
+      tile.mystery = true;
+    }
   }
 }

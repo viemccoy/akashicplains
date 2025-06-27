@@ -98,22 +98,9 @@
   font-weight: bold;
 }
 
-/* Fog overlay */
+/* Fog overlay - removed for clear ASCII rendering */
 .fog-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 0%,
-    transparent 35%,
-    rgba(0, 0, 0, 0.2) 50%,
-    rgba(0, 0, 0, 0.5) 70%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
+  display: none;
 }
 
 /* Current Location Info - floating above terrain */

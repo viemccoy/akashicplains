@@ -1,8 +1,8 @@
-# Akashic Plains - Development with Claude
+# Akashic Plains V2 - Development with Claude
 
 ## Project Overview
 
-Akashic Plains is a multiplayer web application where users traverse an infinite desert of knowledge rendered in ASCII. It transforms abstract semantic relationships into explorable terrain, creating a shared consciousness map powered by Claude AI.
+Akashic Plains is a **real-time multiplayer** web application where users traverse an infinite desert of knowledge rendered in ASCII. It transforms abstract semantic relationships into explorable terrain, creating a shared consciousness map powered by Claude AI. Version 2 introduces true multiplayer with WebSocket communication, global synthesis sharing, and Claude Sonnet 4 for enhanced creative synthesis generation.
 
 ## Core Concept: Collaborative Knowledge Cartography
 
@@ -18,7 +18,14 @@ The game implements semantic exploration where:
 - **TypeScript** for type safety
 - **Vite** for fast development and building
 - **Pure CSS** with CRT effects and phosphor glow
-- **LocalStorage** for game persistence
+- **IndexedDB** for persistent storage
+- **WebSocket** for real-time multiplayer
+
+### Backend Stack (V2)
+- **Cloudflare Workers** for edge computing
+- **Durable Objects** for stateful world management
+- **D1 Database** for global synthesis storage
+- **KV Namespace** for player sessions
 
 ### Key Systems Implemented
 
@@ -68,11 +75,11 @@ Implemented visual depth through ASCII shading:
   - Parallel concepts at similar elevations
 
 #### 5. Multi-Agent AI System
-Three specialized Claude agents work together:
+Specialized Claude models for different tasks:
 
-1. **Semantic Engine**: Analyzes concepts for dimensions and relationships
-2. **Terrain Generator**: Creates topographical maps based on semantics  
-3. **Synthesis Manager**: Fuses bookmarked concepts into new knowledge
+1. **Claude 3.5 Haiku**: Fast concept generation and terrain mapping
+2. **Claude Sonnet 4**: Deep synthesis creation with poetic insights
+3. **Semantic Engine**: Analyzes relationships and places concepts
 
 #### 6. Game State Management
 - **SemanticGameManager**: Orchestrates exploration with concept tracking
@@ -80,12 +87,13 @@ Three specialized Claude agents work together:
 - **Energy system**: Movement costs less on well-traveled paths
 - **Chunk loading**: Infinite world with dynamic generation
 
-#### 7. Knowledge Synthesis
+#### 7. Knowledge Synthesis (Enhanced in V2)
 Players can bookmark sacred sites and synthesize them:
 - Combines 2+ concepts into new crystallized wisdom
-- AI analyzes semantic space between bookmarks
-- Generates novel concepts that bridge them
-- New crystals appear on map as explorable sites
+- Claude Sonnet 4 creates poetic synthesis names and revelations
+- Generates novel concepts that bridge bookmarked ideas
+- New syntheses appear globally for all players to discover
+- Unique coordinates (e.g., "QC-140-120") for sharing locations
 
 ## Implementation Details
 
@@ -108,25 +116,29 @@ Players can bookmark sacred sites and synthesize them:
 - **Notifications**: Toast messages for discoveries
 - **Save System**: Auto-saves every 30 seconds
 
-## Key Files & Components
+## Key Files & Components (V2)
 
 ### Core Game Logic
-- `src/game/semanticGameManager.ts` - Main game orchestration
-- `src/agents/enhancedSemanticGenerator.ts` - Terrain generation with Claude
-- `src/agents/semanticEngine.ts` - Concept analysis
-- `src/agents/topologyGenerator.ts` - 3D ASCII elevation system
+- `src/CenteredSemanticGame.ts` - Main game controller with multiplayer
+- `src/engine/RichSemanticEngine.ts` - 256x256 world with dynamic generation
+- `src/engine/WordGenerator.ts` - Claude integration for concepts & synthesis
+- `src/engine/TerrainRenderer.ts` - ASCII terrain with multiplayer support
+
+### Multiplayer System
+- `src/multiplayer/MultiplayerClient.ts` - WebSocket client with auto-reconnect
+- `workers/websocket-gateway.ts` - Cloudflare Worker for real-time sync
+- `workers/schema.sql` - Database schema for global syntheses
 
 ### UI Components  
-- `src/components/gameScreen.ts` - Main game display
-- `src/components/enhancedLocationInfo.ts` - Semantic info panel
-- `src/components/seedConceptScreen.ts` - Initial concept selection
-- `src/components/synthesisModal.ts` - Knowledge crystallization UI
+- `src/ui/CenteredUI.css` - Centered layout with exploration focus
+- `src/components/ConceptGraph.ts` - Interactive semantic relationship graph
+- `src/components/MiniMap.ts` - Overview of explored areas
+- `src/utils/PersistenceManager.ts` - IndexedDB for local storage
 
-### Effects & Polish
-- `src/effects/particles.ts` - Sand particle system
-- `src/effects/dayNightCycle.ts` - Time of day effects
-- `src/utils/notifications.ts` - Discovery notifications
-- `src/style.css` - All visual effects and animations
+### Performance & Polish
+- `src/utils/PerformanceOptimizer.ts` - Frame rate optimization
+- `src/utils/ErrorHandler.ts` - Graceful error handling
+- No fog of war - clear ASCII rendering
 
 ## Deployment
 
@@ -150,15 +162,31 @@ npm start
 - Build output: `dist`
 - No environment variables needed
 
+## Multiplayer Features (Implemented in V2)
+
+### Real-Time Collaboration
+- ✅ WebSocket integration for shared exploration
+- ✅ See other players in real-time (☺ symbols)
+- ✅ Global synthesis sharing with coordinates
+- ✅ Discovery notifications for all players
+- ✅ Online player count indicator
+
+### Infrastructure
+- ✅ Cloudflare Workers for edge computing
+- ✅ Durable Objects for world state
+- ✅ D1 Database for permanent storage
+- ✅ Automatic reconnection handling
+
 ## Future Enhancements
 
-### Multiplayer Features
-- WebSocket integration for shared exploration
-- See other players' trails in real-time
-- Collaborative synthesis rituals
-- Shared discovery notifications
+### Advanced Features
+- Global discovery feed UI
+- Collaborative synthesis rituals (multi-player)
+- Player trails heat map visualization
+- Chat/emotes system
+- Leaderboards and achievements
 
-### Advanced Semantics
+### Semantic Evolution
 - Paradigm shift events (sandstorms)
 - Contested zones where concepts conflict
 - Temporal layers showing concept evolution
@@ -191,4 +219,13 @@ The ASCII aesthetic isn't just nostalgic—it represents the fundamental nature 
 - Synthesis cost: 30 energy
 - Auto-save: Every 30 seconds
 
-The game successfully implements collaborative knowledge cartography, where abstract semantic relationships become explorable terrain, creating a shared map of human understanding.
+## Version 2 Achievements
+
+Akashic Plains V2 successfully implements:
+- **True Multiplayer**: Real-time player synchronization via WebSockets
+- **Claude Sonnet 4**: Enhanced synthesis generation with deeper insights
+- **Global Synthesis System**: All players contribute to a shared semantic map
+- **Scalable Architecture**: Cloudflare edge computing for low latency
+- **Clear ASCII Rendering**: Removed fog of war for better visibility
+
+The game has evolved from a single-player prototype to a collaborative knowledge cartography platform, where abstract semantic relationships become explorable terrain, creating a shared map of human understanding that grows with every player's journey.

@@ -136,7 +136,7 @@ Return JSON:
 }`;
 
       const response = await this.client.messages.create({
-        model: 'claude-3-5-haiku-latest',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         temperature: 0.95,
         messages: [{

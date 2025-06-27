@@ -1,0 +1,24 @@
+name = "akashic-plains-multiplayer"
+main = "websocket-gateway.ts"
+compatibility_date = "2024-01-01"
+
+# Durable Objects binding
+[[durable_objects.bindings]]
+name = "WORLD_STATE"
+class_name = "WorldState"
+script_name = "akashic-plains-multiplayer"
+
+# D1 Database for syntheses
+[[d1_databases]]
+binding = "SYNTHESES_DB"
+database_name = "akashic-syntheses"
+database_id = "YOUR_DATABASE_ID"
+
+# KV Namespace for player sessions
+[[kv_namespaces]]
+binding = "PLAYER_SESSIONS"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# WebSocket configuration
+[env.production]
+vars = { WEBSOCKET_MAX_CONNECTIONS = "1000" }
