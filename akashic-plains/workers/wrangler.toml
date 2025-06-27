@@ -2,23 +2,37 @@ name = "akashic-plains-multiplayer"
 main = "websocket-gateway.ts"
 compatibility_date = "2024-01-01"
 
+# Account ID (replace with your account ID from Cloudflare dashboard)
+account_id = "c5f0ac21f05e4750cbab9e195ff93d6a"
+
 # Durable Objects binding
 [[durable_objects.bindings]]
 name = "WORLD_STATE"
 class_name = "WorldState"
 script_name = "akashic-plains-multiplayer"
 
-# D1 Database for syntheses
+# D1 Database binding
 [[d1_databases]]
 binding = "SYNTHESES_DB"
 database_name = "akashic-syntheses"
-database_id = "YOUR_DATABASE_ID"
+database_id = "8462c70c-3ce1-496e-ad6e-bc404d9a9b92"  # Replace with your D1 database ID
 
-# KV Namespace for player sessions
+# KV Namespace binding
 [[kv_namespaces]]
 binding = "PLAYER_SESSIONS"
-id = "YOUR_KV_NAMESPACE_ID"
+id = "dd8eb6b207774f2d94155855e575df27"  # Replace with your KV namespace ID
 
-# WebSocket configuration
+# Durable Objects migration
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WorldState"]
+
+# Build configuration
+[build]
+command = ""
+[build.upload]
+format = "service-worker"
+
+# Environment specific configuration
 [env.production]
 vars = { WEBSOCKET_MAX_CONNECTIONS = "1000" }
