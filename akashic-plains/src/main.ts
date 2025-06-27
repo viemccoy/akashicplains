@@ -5,7 +5,7 @@ import { SemanticGameManager } from './game/semanticGameManager';
 import { renderAPIKeyScreen } from './components/apiKeyScreen';
 import { renderSeedConceptScreen } from './components/seedConceptScreen';
 import { renderGameScreen } from './components/gameScreen';
-import { renderEnhancedLocationInfo } from './components/enhancedLocationInfo';
+import { renderSemanticTerrainView } from './components/semanticTerrainView';
 import { renderSynthesisModal } from './components/synthesisModal';
 import { NotificationManager } from './utils/notifications';
 import { StorageManager } from './utils/storage';
@@ -59,13 +59,17 @@ function updateLocationInfo() {
   const infoPanel = document.querySelector('.info-panel');
   if (infoPanel && gameState) {
     const currentLocation = gameManager.getCurrentLocation();
-    const nearbyLocations = gameManager.getNearbyLocations();
+    const nearbyLocations = gameManager.getNearbyLocations(10); // Get more concepts
     const terrainInfo = gameManager.getTerrainInfo();
-    infoPanel.innerHTML = renderEnhancedLocationInfo(
+    const conceptMap = gameManager.getConceptMap();
+    
+    infoPanel.innerHTML = renderSemanticTerrainView(
       currentLocation, 
       nearbyLocations,
       terrainInfo,
-      gameState.playerPosition
+      gameState.playerPosition,
+      gameState.visitedChunks,
+      conceptMap
     );
   }
 }

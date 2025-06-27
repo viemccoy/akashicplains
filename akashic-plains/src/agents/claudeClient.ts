@@ -65,7 +65,7 @@ Return JSON:
 }`;
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 2048,
       temperature: 0.8,
       messages: [{
@@ -126,7 +126,7 @@ Return JSON:
 }`;
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
       temperature: 0.9,
       messages: [{
@@ -183,7 +183,7 @@ Return JSON:
 }`;
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
       temperature: 0.85,
       messages: [{

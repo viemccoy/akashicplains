@@ -166,7 +166,7 @@ Place 4-8 concepts within the 16x16 chunk at meaningful positions.`;
     console.log(`🤖 Calling Claude API for terrain generation...`);
     
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 2048,
       temperature: 0.8,
       messages: [{

@@ -1,5 +1,5 @@
 import type { GameState, SacredSite, Synthesis, Position } from '../types';
-import { EnhancedSemanticGenerator } from '../agents/enhancedSemanticGenerator';
+import { IdealSemanticGenerator } from '../agents/idealSemanticGenerator';
 import { SynthesisManager } from './synthesisManager';
 import { getChunkKey, getChunkFromGlobal } from '../utils/terrain';
 import { TERRAIN_SYMBOLS } from '../types';
@@ -13,7 +13,7 @@ interface ConceptNode {
 
 export class SemanticGameManager {
   private state: GameState;
-  private terrainGenerator: EnhancedSemanticGenerator;
+  private terrainGenerator: IdealSemanticGenerator;
   private synthesisManager: SynthesisManager;
   private loadingChunks: Set<string> = new Set();
   private playerPath: string[] = [];
@@ -23,7 +23,7 @@ export class SemanticGameManager {
   
   constructor(state: GameState) {
     this.state = state;
-    this.terrainGenerator = new EnhancedSemanticGenerator(state.apiKey!);
+    this.terrainGenerator = new IdealSemanticGenerator(state.apiKey!);
     this.synthesisManager = new SynthesisManager(state.apiKey!);
     
     // Initialize with seed concept at origin
@@ -35,6 +35,9 @@ export class SemanticGameManager {
         visited: false
       });
     }
+    
+    // Expose trail data globally for visualization
+    (window as any).gameTrailData = this.trailIntensity;
   }
   
   async movePlayer(dx: number, dy: number): Promise<void> {
@@ -82,14 +85,45 @@ export class SemanticGameManager {
     const loadDistance = 1;
     
     const promises: Promise<void>[] = [];
+    const priorityChunks: Array<{x: number, y: number}> = [];
     
+    // Predictive loading based on movement direction
+    const directionOffsets: Record<string, {dx: number, dy: number}[]> = {
+      'N': [{dx: 0, dy: -1}, {dx: -1, dy: -1}, {dx: 1, dy: -1}],
+      'S': [{dx: 0, dy: 1}, {dx: -1, dy: 1}, {dx: 1, dy: 1}],
+      'E': [{dx: 1, dy: 0}, {dx: 1, dy: -1}, {dx: 1, dy: 1}],
+      'W': [{dx: -1, dy: 0}, {dx: -1, dy: -1}, {dx: -1, dy: 1}],
+      'NE': [{dx: 1, dy: -1}, {dx: 0, dy: -1}, {dx: 1, dy: 0}],
+      'SE': [{dx: 1, dy: 1}, {dx: 0, dy: 1}, {dx: 1, dy: 0}],
+      'NW': [{dx: -1, dy: -1}, {dx: 0, dy: -1}, {dx: -1, dy: 0}],
+      'SW': [{dx: -1, dy: 1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}]
+    };
+    
+    // Add priority chunks based on movement direction
+    const dirOffsets = directionOffsets[this.movementDirection] || [];
+    for (const offset of dirOffsets) {
+      priorityChunks.push({x: cx + offset.dx, y: cy + offset.dy});
+    }
+    
+    // Load priority chunks first
+    for (const chunk of priorityChunks) {
+      const key = getChunkKey(chunk.x, chunk.y);
+      if (!this.state.visitedChunks.has(key) && !this.loadingChunks.has(key)) {
+        promises.push(this.loadSemanticChunk(chunk.x, chunk.y));
+      }
+    }
+    
+    // Then load remaining chunks
     for (let dx = -loadDistance; dx <= loadDistance; dx++) {
       for (let dy = -loadDistance; dy <= loadDistance; dy++) {
         const chunkX = cx + dx;
         const chunkY = cy + dy;
         const key = getChunkKey(chunkX, chunkY);
         
-        if (!this.state.visitedChunks.has(key) && !this.loadingChunks.has(key)) {
+        // Skip if already in priority list
+        const isPriority = priorityChunks.some(c => c.x === chunkX && c.y === chunkY);
+        
+        if (!isPriority && !this.state.visitedChunks.has(key) && !this.loadingChunks.has(key)) {
           promises.push(this.loadSemanticChunk(chunkX, chunkY));
         }
       }

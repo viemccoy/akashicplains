@@ -113,4 +113,4 @@ export const TERRAIN_SYMBOLS = {
 } as const;
 
 export const CHUNK_SIZE = 16;
-export const VIEW_DISTANCE = 20; // How many tiles to show around player
+export const VIEW_DISTANCE = 12; // Smaller view for better focus
